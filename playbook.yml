@@ -1,0 +1,63 @@
+- name: Install docker and docker-compose
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt dependencies
+      become: true
+      shell: |
+        sudo apt-get update -y && sudo apt-get upgrade -y
+    - name: Install dependencies
+      become: true
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      become: true
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT repository
+      become: true
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Install Docker
+      become: true
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Copy backend file
+      ansible.builtin.copy:
+        src: /home/runner/work/Arly/Arly/backend
+        dest: /home/ubuntu/
+        mode: '700'
+      
+    - name: Copy compose file
+      ansible.builtin.copy:
+        src: /home/runner/work/Arly/Arly/docker
+        dest: /home/ubuntu/
+        mode: '700'
+
+    - name: Delete existing containers and images
+      shell: |
+        sudo docker compose down || true
+        sudo docker rmi -f $(sudo docker images -a -q) || true
+
+    - name: Create and start services
+      become: true
+      shell: |
+        cd docker/dev && docker compose up -d

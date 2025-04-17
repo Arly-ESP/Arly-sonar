@@ -1,0 +1,1206 @@
+basePath: /
+definitions:
+  controllers.AuthRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  controllers.AuthResponse:
+    properties:
+      email:
+        type: string
+      first_session:
+        type: boolean
+      id:
+        type: integer
+      token:
+        type: string
+    type: object
+  controllers.ChatRequest:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  controllers.ChatResponse:
+    properties:
+      chat_id:
+        type: integer
+      message_id:
+        type: integer
+      response:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  controllers.ChatWithMessages:
+    properties:
+      chat_id:
+        type: integer
+      messages:
+        items:
+          $ref: '#/definitions/models.Message'
+        type: array
+    type: object
+  controllers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  controllers.ResetPasswordRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+      new_password:
+        minLength: 8
+        type: string
+    required:
+    - code
+    - email
+    - new_password
+    type: object
+  controllers.UserSerializer:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+    type: object
+  controllers.VerifyRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  models.Chat:
+    properties:
+      context:
+        $ref: '#/definitions/models.Context'
+      context_id:
+        type: integer
+      id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  models.Context:
+    properties:
+      content:
+        additionalProperties: true
+        type: object
+      conversation_history:
+        additionalProperties: true
+        type: object
+      entities:
+        additionalProperties: true
+        type: object
+      id:
+        type: integer
+      intent:
+        type: string
+      is_current:
+        type: boolean
+      user_id:
+        type: integer
+    type: object
+  models.Message:
+    properties:
+      chat:
+        $ref: '#/definitions/models.Chat'
+      chat_id:
+        type: integer
+      content:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      is_bot_message:
+        type: boolean
+      message_type:
+        type: string
+      response_time:
+        type: integer
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    type: object
+  models.Surveys:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      questions:
+        type: string
+      survey_description:
+        type: string
+      survey_name:
+        type: string
+      survey_slug:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      first_session:
+        type: boolean
+      id:
+        type: integer
+      is_deleted:
+        type: boolean
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      updated_at:
+        type: string
+      verification_code:
+        type: string
+      verification_code_expiry:
+        type: string
+      verified:
+        type: boolean
+    required:
+    - email
+    - first_name
+    - password
+    type: object
+  models.UserActivity:
+    properties:
+      date:
+        type: string
+      id:
+        type: integer
+      message_count:
+        type: integer
+      mood:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.UserAnswers:
+    properties:
+      answers:
+        additionalProperties: true
+        type: object
+      created_at:
+        type: string
+      id:
+        type: integer
+      survey_id:
+        type: integer
+      survey_slug:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+host: localhost:5050
+info:
+  contact:
+    email: support@swagger.io
+    name: Arly API Support
+    url: http://www.swagger.io/support
+  description: This is the Arly API server documentation
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Arly API
+  version: "1.0"
+paths:
+  /api/admin/users:
+    get:
+      description: Retrieves a list of all users. Admin access required.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all users
+          schema:
+            items:
+              $ref: '#/definitions/controllers.UserSerializer'
+            type: array
+        "401":
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users (Admin only)
+      tags:
+      - Admin
+  /api/admin/users/{id}:
+    delete:
+      description: Deletes a user from the database by their ID. Admin access required.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: User deleted successfully
+        "400":
+          description: Invalid User ID
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a user by ID (Admin only)
+      tags:
+      - Admin
+    get:
+      description: Retrieves a single user's details by their ID. Admin access required.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/controllers.UserSerializer'
+        "400":
+          description: Invalid User ID
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user details by ID (Admin only)
+      tags:
+      - Admin
+  /api/chat:
+    post:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to send a message to the AI assistant.
+        The user's activity is tracked and their message is stored. Returns the AI's
+        response.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Message to send to the AI assistant
+        in: body
+        name: chatReq
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.ChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AI response with message and chat details
+          schema:
+            $ref: '#/definitions/controllers.ChatResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized access, token missing or invalid
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Interact with the AI assistant
+      tags:
+      - Chat
+  /api/chat/{chat_id}/messages:
+    get:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to retrieve all messages for a specific
+        chat by providing the chat ID.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Chat ID to retrieve messages for
+        in: path
+        name: chat_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of messages for the specified chat
+          schema:
+            items:
+              $ref: '#/definitions/models.Message'
+            type: array
+        "400":
+          description: Invalid or missing Chat ID
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized access, token missing or invalid
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch messages for a specific chat
+      tags:
+      - Chat
+  /api/health:
+    get:
+      consumes:
+      - application/json
+      description: Returns a JSON response with a welcome message, the current time,
+        and the status of the API.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check endpoint
+      tags:
+      - Health
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user by checking their email, password, and verification
+        status.
+      parameters:
+      - description: User login data
+        in: body
+        name: auth
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User authenticated successfully
+          schema:
+            $ref: '#/definitions/controllers.AuthResponse'
+        "400":
+          description: Invalid input or user not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Invalid credentials or user not verified
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Log in a user
+      tags:
+      - Authentication
+  /api/mood:
+    post:
+      consumes:
+      - application/json
+      description: Logs the mood of a user for a given day. If a mood already exists
+        for the day, it updates the mood.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User activity information
+        in: body
+        name: activity
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserActivity'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Mood updated successfully
+          schema:
+            $ref: '#/definitions/models.UserActivity'
+        "201":
+          description: Mood logged successfully
+          schema:
+            $ref: '#/definitions/models.UserActivity'
+        "400":
+          description: Invalid input or missing required fields
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Log a user's mood
+      tags:
+      - Mood
+  /api/password-reset:
+    get:
+      consumes:
+      - application/json
+      description: Sends a password reset code to the user's email.
+      parameters:
+      - description: User email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset code sent successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Email is required or user not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Request a password reset
+      tags:
+      - Authentication
+    post:
+      consumes:
+      - application/json
+      description: Resets a user's password using the provided reset code and new
+        password.
+      parameters:
+      - description: Password reset data
+        in: body
+        name: reset
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input or user not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Invalid or expired reset code
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Reset a user's password
+      tags:
+      - Authentication
+  /api/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user, sends a verification code to their email,
+        and returns a token.
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/controllers.AuthResponse'
+        "400":
+          description: Invalid input or user already exists
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /api/surveys:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all surveys.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of surveys
+          schema:
+            items:
+              $ref: '#/definitions/models.Surveys'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Fetch all surveys
+      tags:
+      - Surveys
+    post:
+      consumes:
+      - application/json
+      description: Admins can create a new survey with embedded questions.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Survey data
+        in: body
+        name: survey
+        required: true
+        schema:
+          $ref: '#/definitions/models.Surveys'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Survey created successfully
+          schema:
+            $ref: '#/definitions/models.Surveys'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new survey
+      tags:
+      - Surveys
+  /api/surveys/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Admins can delete a survey by ID.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Survey ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Survey deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Survey not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a survey
+      tags:
+      - Surveys
+    get:
+      consumes:
+      - application/json
+      description: Get a specific survey along with its embedded questions.
+      parameters:
+      - description: Survey ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Survey details with questions
+          schema:
+            $ref: '#/definitions/models.Surveys'
+        "404":
+          description: Survey not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Fetch a survey with its embedded questions
+      tags:
+      - Surveys
+    put:
+      consumes:
+      - application/json
+      description: Admins can update a survey's details including questions.
+      parameters:
+      - description: Survey ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated survey data
+        in: body
+        name: survey
+        required: true
+        schema:
+          $ref: '#/definitions/models.Surveys'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Survey updated successfully
+          schema:
+            $ref: '#/definitions/models.Surveys'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Survey not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an existing survey
+      tags:
+      - Surveys
+  /api/surveys/{id}/responses:
+    get:
+      consumes:
+      - application/json
+      description: Admins can fetch all responses for a specific survey.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Survey ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of survey responses
+          schema:
+            items:
+              $ref: '#/definitions/models.UserAnswers'
+            type: array
+        "404":
+          description: Survey not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch all responses for a survey
+      tags:
+      - Surveys
+    post:
+      consumes:
+      - application/json
+      description: Users can submit their responses to a survey.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Survey ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User's survey response
+        in: body
+        name: response
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserAnswers'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Response submitted successfully
+          schema:
+            $ref: '#/definitions/models.UserAnswers'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: Survey not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Submit a user's survey response
+      tags:
+      - Surveys
+  /api/surveys/{id}/responses/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific user's response to a survey.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Survey ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User's survey response
+          schema:
+            $ref: '#/definitions/models.UserAnswers'
+        "404":
+          description: Response not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch a user's response for a survey
+      tags:
+      - Surveys
+  /api/surveys/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific survey by its slug.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Survey slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Survey details with questions
+          schema:
+            $ref: '#/definitions/models.Surveys'
+        "404":
+          description: Survey not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Fetch a survey by slug
+      tags:
+      - Surveys
+  /api/user:
+    get:
+      description: Retrieves the details of the currently authenticated user.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User found
+          schema:
+            $ref: '#/definitions/controllers.UserSerializer'
+        "401":
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get the authenticated user's details
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Updates the details of the currently authenticated user.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated
+          schema:
+            $ref: '#/definitions/controllers.UserSerializer'
+        "400":
+          description: Invalid input or missing required fields
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update the authenticated user's details
+      tags:
+      - Users
+  /api/user/activities:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all activity logs of the authenticated user, optionally
+        filtered by a date range.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Start date in YYYY-MM-DD format
+        in: query
+        name: start_date
+        type: string
+      - description: End date in YYYY-MM-DD format
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user activities
+          schema:
+            items:
+              $ref: '#/definitions/models.UserActivity'
+            type: array
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: No activity found for the user
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Get the activity history of the authenticated user
+      tags:
+      - Activity
+  /api/user/activity:
+    get:
+      consumes:
+      - application/json
+      description: Fetches the activity of the authenticated user for the specified
+        date. Defaults to today's activity if no date is provided.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Date in YYYY-MM-DD format (defaults to today)
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User's activity for the day
+          schema:
+            $ref: '#/definitions/models.UserActivity'
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "404":
+          description: No activity found for the user on the specified date
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Get the activity of the authenticated user for a specific date
+      tags:
+      - Activity
+  /api/user/chats:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all chats and their messages for the authenticated user.
+        Returns a list of chat IDs with their associated messages.
+      parameters:
+      - default: 'Bearer #'
+        description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of chats with their messages
+          schema:
+            items:
+              $ref: '#/definitions/controllers.ChatWithMessages'
+            type: array
+        "401":
+          description: Unauthorized access, token missing or invalid
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Retrieve chats and messages for the authenticated user
+      tags:
+      - Chat
+  /api/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verifies a user's email using the provided code and returns a token
+        upon successful verification.
+      parameters:
+      - description: Verification data
+        in: body
+        name: verification
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.VerifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User verified successfully
+          schema:
+            $ref: '#/definitions/controllers.AuthResponse'
+        "400":
+          description: Invalid or missing data
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Invalid or expired verification code
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Verify a user's email
+      tags:
+      - Authentication
+schemes:
+- http
+swagger: "2.0"

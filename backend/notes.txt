@@ -1,0 +1,47 @@
+go get -u github.com/gin-gonic/gin         # Web framework
+go get -u gorm.io/gorm                     # ORM library
+go get -u gorm.io/driver/postgres          # PostgreSQL driver for GORM
+go get -u github.com/pressly/goose/v3      # Migrations tool
+go get -u github.com/stretchr/testify      # Testing framework
+go get -u github.com/gofiber/fiber/v2      # Web framework
+
+
+
+
+for hot reload
+https://github.com/air-verse/air
+https://github.com/air-verse/air
+-> https://github.com/sixfwa/fiber-gorm/blob/main/.air.toml
+
+To Start the project 
+go run main.go
+
+
+
+sudo docker build -t my-postgres-image .
+sudo docker run --name my-postgres-container -p 5432:5432 -d my-postgres-image
+
+
+
+make check-go checks if Go is installed.
+make install-go installs Go if it’s not present (Linux and macOS only).
+make install-deps installs project dependencies.
+make build builds the Go application.
+make run runs the Go application.
+make clean removes the build artifacts.
+make setup ensures dependencies are installed.
+make all runs setup and builds the project.
+
+
+timezones
+https://github.com/mileusna/timezones/blob/main/README.md
+
+
+
+
+Test Useful commands 
+go test ./... -cover  # Run tests and show coverage
+go test ./... -coverprofile=coverage.out # Run tests and save coverage to coverage.out
+go tool cover -html=coverage.out # Open coverage report in browser
+go test ./... -bench=. # Run benchmarks
+go test ./... -bench=. -benchmem # Run benchmarks and show memory allocations

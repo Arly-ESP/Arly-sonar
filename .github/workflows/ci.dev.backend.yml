@@ -1,0 +1,63 @@
+name: Go Backend CI
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+    branches: [ "dev", "feature/trivy" ]
+
+jobs:
+
+  build:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Install dependencies
+      run: go mod download
+      working-directory: ./backend
+    - name: Verify dependencies
+      run: go mod verify
+      working-directory: ./backend
+
+    - name: Build
+      run: go build -v ./...
+      working-directory: ./backend
+
+  build_docker_and_push_into_registry:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    if: success()
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker Backend images
+        run: |
+          docker build . --tag backend:latest
+        working-directory: ./backend/
+
+  scan_images_with_trivy:
+    runs-on: ubuntu-latest
+    needs: [ build_docker_and_push_into_registry ]
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t container .
+        working-directory: ./backend/
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'container'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'

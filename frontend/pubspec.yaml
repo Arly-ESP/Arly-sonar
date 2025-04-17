@@ -1,0 +1,62 @@
+name: Arly
+description: "A new Flutter project."
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  url_launcher: ^6.1.8
+
+  http: ^1.0.0 # For making HTTP requests (e.g., registration API)
+  shared_preferences: ^2.2.0 # For storing the token locally
+  go_router: ^9.0.0 # Optional: For handling navigation if needed
+  cupertino_icons: ^1.0.8 # For iOS-style icons
+  readmore: ^3.0.0 # For expandable text functionality
+  lottie: ^2.4.0 # For adding Lottie animations
+  charts_flutter: ^0.12.0
+  flutter_secure_storage: ^9.2.2
+  speech_to_text: ^7.0.0
+  webview_flutter: ^4.2.2
+  features_tour: ^0.4.12
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.10
+  fl_chart: ^0.64.0
+
+
+
+  flutter_lints: ^4.0.0 # For recommended lints and coding practices
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/arly.png
+  android: true
+  ios: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/arly.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+
+  # Uncomment and configure the fonts section if you need custom fonts
+  # fonts:
+  #   - family: fontRegular
+  #     fonts:
+  #       - asset: assets/fonts/NunitoSans_10pt-Regular.ttf
+  #         weight: 400
+  #       - asset: assets/fonts/NunitoSans_10pt-Italic.ttf
+  #         weight: 400
+  #         style: italic

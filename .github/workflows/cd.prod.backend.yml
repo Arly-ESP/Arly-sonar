@@ -1,0 +1,42 @@
+name: Go Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.0
+      - name: Install Ansible
+        run: |
+          pip install ansible
+      - name: Set up SSH Key
+        run: |
+          eval `ssh-agent -s`
+          mkdir -p /home/runner/.ssh/
+          touch /home/runner/.ssh/id_ed25519
+          echo -e "${{secrets.SSH_PRIVATE_KEY}}" > /home/runner/.ssh/id_ed25519
+          chmod 700 /home/runner/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 ${{secrets.INSTANCE_IP}} >> /home/runner/.ssh/known_hosts
+          pwd
+          ls
+      - name: Create .pem file
+        run: |
+          echo -e "${{secrets.ARLY_AWS_KEY}}" > nsa_key.pem
+          chmod 700 arly_keypair.pem
+        working-directory: ./ansible/
+      - name: Deploy with Ansible Backend
+        run: |
+          ansible-playbook -i "${{secrets.INSTANCE_IP}}, " -u root deploy_back.yml --private-key nsa_key.pem
+        working-directory: ./ansible/
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
